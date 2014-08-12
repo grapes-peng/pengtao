@@ -1,0 +1,431 @@
+﻿<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:jee="http://www.springframework.org/schema/jee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+       http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-3.1.xsd
+       ">
+
+
+	<!-- 处理类 -->
+	<bean name="msgProcessorFactory" class="net.easipay.wgq.dutapp.msg.MsgProcessorFactory">
+		<property name="map">
+			<map>
+				<entry key="dutAppProcessor">
+					<bean class="net.easipay.wgq.dutapp.msg.DutAppProcessor" />
+					
+				</entry>
+				<entry key="GateAppProcessor">
+					<bean class="net.easipay.wgq.dutapp.msg.GateAppProcessor" />
+					
+				</entry>
+			</map>
+		</property>
+	</bean>
+
+	<!-- ================================================================================================================== -->
+
+	<!-- 检查条件定时任务bean -->
+	<bean id="checkConditionRefreshJob" class="net.easipay.wgq.cus.job.CheckConditionRefreshJob"></bean>
+
+	<!-- 检查条件job开始 -->
+	<bean id="checkConditionJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+		<property name="jobClass">
+			<value>net.easipay.wgq.cus.job.WGQDetailQuartzJobBean</value>
+		</property>
+		<property name="jobDataAsMap">
+			<map>
+				<entry key="targetObject" value="checkConditionRefreshJob" />
+				<entry key="targetMethod" value="run" />
+			</map>
+		</property>
+	</bean>
+
+	<!-- 检查条件调度配置 -->
+	<bean id="checkConditionTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail">
+			<ref bean="checkConditionJobDetail" />
+		</property>
+		<property name="cronExpression">
+			<value>0 */30 * * * ?</value>
+		</property>
+	</bean>
+
+	<!-- ================================================================================================== -->
+
+	<!-- 工作的bean -->
+	<bean id="myJob" class="net.easipay.wgq.dutapp.job.DutAppMsgRecvJob" />
+
+	<!-- job的配置开始 -->
+	<bean id="myJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+		<property name="jobClass">
+			<value>net.easipay.wgq.cus.job.WGQDetailQuartzJobBean</value>
+		</property>
+		<property name="jobDataAsMap">
+			<map>
+				<entry key="targetObject" value="myJob" />
+				<entry key="targetMethod" value="work" />
+			</map>
+		</property>
+	</bean>
+	<!-- job的配置结束 -->
+
+
+	<!-- 调度的配置开始 -->
+	<bean id="crontestJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail">
+			<ref bean="myJobDetail" />
+		</property>
+		<property name="cronExpression">
+			<value>0/10 * * * * ?</value>
+		</property>
+	</bean>
+	<!-- 调度的配置结束 -->
+	<!-- ================================================================================================== -->
+	<!-- 卡口核放 -->
+
+	<bean id="gateAppMsgRecvJob" class="net.easipay.wgq.dutapp.job.GateAppMsgRecvJob" />
+	<!-- job的配置开始 -->
+	<bean id="gateAppMsgRecvJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+		<property name="jobClass">
+			<value>net.easipay.wgq.cus.job.WGQDetailQuartzJobBean</value>
+		</property>
+		<property name="jobDataAsMap">
+			<map>
+				<entry key="targetObject" value="gateAppMsgRecvJob" />
+				<entry key="targetMethod" value="work" />
+			</map>
+		</property>
+	</bean>
+	<!-- job的配置结束 -->
+	<!-- 调度的配置开始 -->
+	<bean id="gateAppMsgRecvJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail">
+			<ref bean="gateAppMsgRecvJobDetail" />
+		</property>
+		<property name="cronExpression">
+			<value>0/10 * * * * ?</value>
+		</property>
+	</bean>
+	<!-- 调度的配置结束 -->
+	
+	
+	<!-- ========================================================================================================= -->
+
+	<!-- 保函总额更新job开始 -->
+	<bean id="guaranteeProcedureJob" class="net.easipay.wgq.cus.job.GuaranteeProcedureJob"></bean>
+	<bean id="guaranteeProcedureJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+		<property name="jobClass">
+			<value>net.easipay.wgq.cus.job.WGQDetailQuartzJobBean</value>
+		</property>
+		<property name="jobDataAsMap">
+			<map>
+				<entry key="targetObject" value="guaranteeProcedureJob" />
+				<entry key="targetMethod" value="run" />
+			</map>
+		</property>
+	</bean>
+	<bean id="guaranteeProcedureTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail">
+			<ref bean="guaranteeProcedureJobDetail" />
+		</property>
+		<property name="cronExpression">
+			<value>0 0 0 * * ?</value>
+		</property>
+	</bean>
+	<!-- 保函总额更新job结束 -->
+
+	<!-- ========================================================================================================= -->
+
+	<!-- 企业锁表更新job开始 -->
+	<bean id="orgLockProcedureJob" class="net.easipay.wgq.cus.job.OrgLockProcedureJob"></bean>
+	<bean id="orgLockProcedureJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+		<property name="jobClass">
+			<value>net.easipay.wgq.cus.job.WGQDetailQuartzJobBean</value>
+		</property>
+		<property name="jobDataAsMap">
+			<map>
+				<entry key="targetObject" value="orgLockProcedureJob" />
+				<entry key="targetMethod" value="run" />
+			</map>
+		</property>
+	</bean>
+	<bean id="orgLockProcedureTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail">
+			<ref bean="orgLockProcedureJobDetail" />
+		</property>
+		<property name="cronExpression">
+			<value>0 0 0 * * ?</value>
+		</property>
+	</bean>
+	<!-- 企业锁表更新job结束 -->
+
+	<!-- ============================================================================================ -->
+
+	<!-- 库存更新job开始 -->
+	<bean id="stockStatisticsJob" class="net.easipay.wgq.cus.job.StockStatisticsJob"></bean>
+	<bean id="stockStatisticsJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+		<property name="jobClass">
+			<value>net.easipay.wgq.cus.job.WGQDetailQuartzJobBean</value>
+		</property>
+		<property name="jobDataAsMap">
+			<map>
+				<entry key="targetObject" value="stockStatisticsJob" />
+				<entry key="targetMethod" value="run" />
+			</map>
+		</property>
+	</bean>
+	<bean id="stockStatisticsTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail">
+			<ref bean="stockStatisticsJobDetail" />
+		</property>
+		<property name="cronExpression">
+			<value>0 0 0 * * ?</value>
+		</property>
+	</bean>
+	<!-- 库存更新job结束 -->
+
+
+	<!-- ============================================================================================ -->
+
+	<!-- 单证比对服务配置开始 -->
+	<bean id="billCompareJob" class="net.easipay.wgq.cus.job.BillCompareJob">
+		<property name="expiredDays" value="30" />
+	</bean>
+
+	<bean id="billComparJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+		<property name="jobClass">
+			<value>net.easipay.wgq.cus.job.WGQDetailQuartzJobBean</value>
+		</property>
+		<property name="jobDataAsMap">
+			<map>
+				<entry key="targetObject" value="billCompareJob" />
+				<entry key="targetMethod" value="run" />
+			</map>
+		</property>
+	</bean>
+	<bean id="billCompareTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail">
+			<ref bean="billComparJobDetail" />
+		</property>
+		<property name="cronExpression">
+			<value>0 0/30 * * * ?</value>
+		</property>
+	</bean>
+	<!-- 单证比对服务配置结束 -->
+
+
+	<!-- ============================================================================================ -->
+
+
+	<!-- 报关单标记过卡服务配置开始 -->
+	<bean id="entryUpdateJob" class="net.easipay.wgq.cus.job.EntryUpdateJob"></bean>
+
+	<bean id="entryUpdateJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+		<property name="jobClass">
+			<value>net.easipay.wgq.cus.job.WGQDetailQuartzJobBean</value>
+		</property>
+		<property name="jobDataAsMap">
+			<map>
+				<entry key="targetObject" value="entryUpdateJob" />
+				<entry key="targetMethod" value="run" />
+			</map>
+		</property>
+	</bean>
+	<bean id="entryUpdateTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail">
+			<ref bean="entryUpdateJobDetail" />
+		</property>
+		<property name="cronExpression">
+			<value>0 0 1 * * ?</value>
+		</property>
+	</bean>
+	<!-- 报关单标记过卡服务配置结束 -->
+	<!-- ============================================================================================ -->
+
+
+	<!-- 报关单标记过卡服务配置开始（出区） -->
+	<bean id="entryUpdateOutJob" class="net.easipay.wgq.cus.job.EntryUpdateOutJob"></bean>
+
+	<bean id="entryUpdateOutJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+		<property name="jobClass">
+			<value>net.easipay.wgq.cus.job.WGQDetailQuartzJobBean</value>
+		</property>
+		<property name="jobDataAsMap">
+			<map>
+				<entry key="targetObject" value="entryUpdateOutJob" />
+				<entry key="targetMethod" value="run" />
+			</map>
+		</property>
+	</bean>
+	<bean id="entryUpdateOutTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail">
+			<ref bean="entryUpdateOutJobDetail" />
+		</property>
+		<property name="cronExpression">
+			<value>0 0/10 * * * ?</value>
+		</property>
+	</bean>
+	<!-- 报关单标记过卡服务配置结束（出区） -->
+	<!-- ============================================================================================ -->
+
+
+	<!-- 三天未过卡核放单作废服务配置开始 -->
+	<bean id="gateBillManageJob" class="net.easipay.wgq.cus.job.GateBillManageJob"></bean>
+
+	<bean id="gateBillManageJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+		<property name="jobClass">
+			<value>net.easipay.wgq.cus.job.WGQDetailQuartzJobBean</value>
+		</property>
+		<property name="jobDataAsMap">
+			<map>
+				<entry key="targetObject" value="gateBillManageJob" />
+				<entry key="targetMethod" value="run" />
+			</map>
+		</property>
+	</bean>
+	<bean id="gateBillManageTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail">
+			<ref bean="gateBillManageJobDetail" />
+		</property>
+		<property name="cronExpression">
+			<value>0 0 0 * * ?</value>
+		</property>
+	</bean>
+	<!-- 三天未过卡核放单作废服务配置结束 -->
+	<!-- ============================================================================================ -->
+
+
+	<!-- 报文重发定时任务配置开始 -->
+	<bean id="msgRecModelReSendJob" class="net.easipay.wgq.cus.job.MsgRecModelReSendJob">
+		<property name="delay" value="1" />
+	</bean>
+
+	<bean id="msgRecModelReSendJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+		<property name="jobClass">
+			<value>net.easipay.wgq.cus.job.WGQDetailQuartzJobBean</value>
+		</property>
+		<property name="jobDataAsMap">
+			<map>
+				<entry key="targetObject" value="msgRecModelReSendJob" />
+				<entry key="targetMethod" value="run" />
+			</map>
+		</property>
+	</bean>
+	<bean id="msgRecResendTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail">
+			<ref bean="msgRecModelReSendJobDetail" />
+		</property>
+		<property name="cronExpression">
+			<value>0 0 */1 * * ?</value>
+		</property>
+	</bean>
+	<!-- 报文重发定时任务配置结束 -->
+
+
+	<!-- ============================================================================================ -->
+
+	<!-- 提单报文发送服务配置开始 -->
+	<bean id="manifestBillMsgSendJob" class="net.easipay.wgq.cus.job.ManifestBillMsgSendJob" />
+
+
+	<bean id="manifestBillMsgSendJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+		<property name="jobClass">
+			<value>net.easipay.wgq.cus.job.WGQDetailQuartzJobBean</value>
+		</property>
+		<property name="jobDataAsMap">
+			<map>
+				<entry key="targetObject" value="manifestBillMsgSendJob" />
+				<entry key="targetMethod" value="run" />
+			</map>
+		</property>
+	</bean>
+	<bean id="manifestBillMsgSendTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail">
+			<ref bean="manifestBillMsgSendJobDetail" />
+		</property>
+		<property name="cronExpression">
+			<value>0 */3 * * * ?</value>
+		</property>
+	</bean>
+
+	<!-- 提单报文发送服务配置结束 -->
+
+	<!-- 货物金额加权平均值计算定时服务配置开始 -->
+	<bean id="calcCargoMoneyJob" class="net.easipay.wgq.cus.job.CalcCargoMoneyJob">
+	</bean>
+	<bean id="calcCargoMoneyJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+		<property name="jobClass">
+			<value>net.easipay.wgq.cus.job.WGQDetailQuartzJobBean</value>
+		</property>
+		<property name="jobDataAsMap">
+			<map>
+				<entry key="targetObject" value="calcCargoMoneyJob" />
+				<entry key="targetMethod" value="run" />
+			</map>
+		</property>
+	</bean>
+	<bean id="calcCargoMoneyTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail">
+			<ref bean="calcCargoMoneyJobDetail" />
+		</property>
+		<property name="cronExpression">
+			<value>0 0 1 * * ?</value>
+		</property>
+	</bean>
+	<!-- 货物金额加权平均值计算定时服务配置结束 -->
+
+	<!-- ========================================================================================================= -->
+
+	<!-- 拒绝 超过三十天 未做转入单的区内转出单 job开始 -->
+	<bean id="deleteExceedInsideBillJob" class="net.easipay.wgq.cus.job.DeleteExceedInsideBillJob"></bean>
+	<bean id="deleteExceedInsideBillJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+		<property name="jobClass">
+			<value>net.easipay.wgq.cus.job.WGQDetailQuartzJobBean</value>
+		</property>
+		<property name="jobDataAsMap">
+			<map>
+				<entry key="targetObject" value="deleteExceedInsideBillJob" />
+				<entry key="targetMethod" value="run" />
+			</map>
+		</property>
+	</bean>
+	<bean id="deleteExceedInsideBillTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail">
+			<ref bean="deleteExceedInsideBillJobDetail" />
+		</property>
+		<property name="cronExpression">
+			<value>0 0 2 * * ?</value>
+		</property>
+	</bean>
+	<!-- 拒绝 超过三十天 未做转入单的区内转出单 job结束 -->
+	
+	<!-- ========================================================================================================= -->
+
+	<!-- 拒绝 超过三十天 未做转入单的区内转出单 job开始 -->
+	<bean id="deleteAssessRelationJob" class="net.easipay.wgq.cus.job.DeleteAssessRelationJob"></bean>
+	<bean id="deleteAssessRelationJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+		<property name="jobClass">
+			<value>net.easipay.wgq.cus.job.WGQDetailQuartzJobBean</value>
+		</property>
+		<property name="jobDataAsMap">
+			<map>
+				<entry key="targetObject" value="deleteAssessRelationJob" />
+				<entry key="targetMethod" value="run" />
+			</map>
+		</property>
+	</bean>
+	<bean id="deleteAssessRelationJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail">
+			<ref bean="deleteAssessRelationJobDetail" />
+		</property>
+		<property name="cronExpression">
+			<value>0 0 1 * * ?</value>
+		</property>
+	</bean>
+	<!-- 拒绝 超过三十天 未做转入单的区内转出单 job结束 -->
+
+	
+
+
+</beans>	
+ 	

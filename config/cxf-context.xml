@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jaxws="http://cxf.apache.org/jaxws" xmlns:jaxrs="http://cxf.apache.org/jaxrs"
+	xmlns:cxf="http://cxf.apache.org/core"
+	xsi:schemaLocation="
+	http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context-3.2.xsd
+	http://cxf.apache.org/jaxws
+	http://cxf.apache.org/schemas/jaxws.xsd
+	http://cxf.apache.org/jaxrs
+    http://cxf.apache.org/schemas/jaxrs.xsd
+    http://cxf.apache.org/core 
+    http://cxf.apache.org/schemas/core.xsd
+	">
+
+	<import resource="classpath:META-INF/cxf/cxf.xml" />
+	<import resource="classpath:META-INF/cxf/cxf-extension-soap.xml" />
+	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
+
+	<bean id="userDao" class="com.cxf.dao.UserDao"></bean>
+	<jaxws:endpoint id="userManager" address="/UserManager"
+		implementorClass="com.cxf.webservice.UserService">
+		<jaxws:implementor>
+			<bean id="userServiceImpl" class="com.cxf.webservice.impl.UserServiceImpl">
+				<property name="userDao">
+					<ref bean="userDao" />
+				</property>
+			</bean>
+		</jaxws:implementor>
+	</jaxws:endpoint>
+
+	<cxf:bus>
+		<cxf:features>
+			<cxf:logging />
+			<!--<cxf:fastinfoset force="false"/> -->
+			<bean class="org.apache.cxf.transport.common.gzip.GZIPFeature">
+				<property name="threshold">
+					<value>1024</value>
+				</property>
+			</bean>
+		</cxf:features>
+	</cxf:bus>
+	<!-- 这里的地址很重要，客户端需要通过这个地址来访问WebService -->
+	<jaxrs:server id="bookservice" address="/">
+		<jaxrs:serviceBeans>
+			<ref bean="customerservice" />
+		</jaxrs:serviceBeans>
+		<!-- <jaxrs:inInterceptors>
+			<ref bean="authInterCeptor" />
+		</jaxrs:inInterceptors> -->
+		
+		<!-- <jaxrs:outInterceptors>
+			<ref bean="exceptionInterceptor" />
+			<ref bean="customOutFaultInterceptor" ></ref>
+		</jaxrs:outInterceptors> -->
+		<!-- <jaxrs:providers>
+			<bean class="org.codehaus.jackson.jaxrs.JacksonJsonProvider" />
+			<bean class="com.cxf.rest.interceptor.InvokeFaultExceptionMapper" />
+		</jaxrs:providers> -->
+
+		<jaxrs:extensionMappings>
+			<entry key="json" value="application/json" />
+			<entry key="xml" value="application/xml" />
+		</jaxrs:extensionMappings>
+		<jaxrs:languageMappings>
+			<entry key="en" value="en-gb" />
+		</jaxrs:languageMappings>
+
+	</jaxrs:server>
+	<bean id="authInterCeptor" class="com.cxf.rest.interceptor.AuthInterceptor"></bean>
+	<bean id="customOutFaultInterceptor" class="com.cxf.rest.interceptor.CustomOutFaultInterceptor"></bean>
+	<bean id="exceptionInterceptor" class="com.cxf.rest.interceptor.ExceptionInterceptor"></bean>
+	<bean id="customerservice" class="com.cxf.rest.impl.CustomerServiceImpl" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+</beans>
+

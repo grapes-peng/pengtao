@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans 
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jaxws="http://cxf.apache.org/jaxws"
+	xsi:schemaLocation="
+	http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context-3.2.xsd
+	http://cxf.apache.org/jaxws
+	http://cxf.apache.org/schemas/jaxws.xsd
+	">
+
+	<import resource="classpath:META-INF/cxf/cxf.xml" />
+	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
+	<import resource="classpath:spring-aop.xml" />
+	<import resource="classpath:designpattern-context.xml" />
+	<import resource="classpath:applicationContext-security.xml" />
+
+	<!-- Root Context: defines shared resources visible to all other web components -->
+	<!-- 通过component-scan 让Spring扫描org.swinglife.controller下的所有的类，让Spring的代码注解生效 -->
+	<context:component-scan base-package="org.swinglife.controller"></context:component-scan>
+	<context:component-scan base-package="com.spring.context"></context:component-scan>
+
+
+	<bean id="userDao" class="com.cxf.dao.UserDao"></bean>
+	<jaxws:endpoint id="userManager" address="/UserManager"
+		implementorClass="com.cxf.webservice.UserService">
+		<jaxws:implementor>
+			<bean id="userServiceImpl" class="com.cxf.webservice.impl.UserServiceImpl">
+				<property name="userDao">
+					<ref bean="userDao" />
+				</property>
+			</bean>
+		</jaxws:implementor>
+	</jaxws:endpoint>
+</beans>
+

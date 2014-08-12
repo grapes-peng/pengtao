@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans 
+	xmlns="http://www.springframework.org/schema/security"
+	xmlns:beans="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+	http://www.springframework.org/schema/beans   
+    http://www.springframework.org/schema/beans/spring-beans-3.2.xsd   
+    http://www.springframework.org/schema/security   
+    http://www.springframework.org/schema/security/spring-security-3.0.xsd">
+
+	<!-- auto-config = true 则使用from-login. 如果不使用该属性 则默认为http-basic(没有session). 
+		access-denied-page:出错后跳转到的错误页面; -->
+	<http auto-config="true" access-denied-page="/page/403.jsp">
+		<!-- intercept-url:拦截器,可以设定哪些路径需要哪些权限来访问. filters=none 不使用过滤,也可以理解为忽略 -->
+		<intercept-url pattern="/page/index.jsp" access="ROLE_USER" />
+		<intercept-url pattern="/page/logon.jsp" filters="none" />
+		<intercept-url pattern="/common/**" filters="none" />
+		<intercept-url pattern="/script/**" filters="none" />
+		<intercept-url pattern="/page/admin.jsp" access="ROLE_ADMIN" />
+		<intercept-url pattern="/page/user.jsp" access="ROLE_USER" />
+
+		<!-- session-management是针对session的管理. 这里可以不配置. 如有需求可以配置. -->
+		<!-- id登陆唯一. 后登陆的账号会挤掉第一次登陆的账号 error-if-maximum-exceeded="true" 禁止2次登陆; 
+			session-fixation-protection="none" 防止伪造sessionid攻击. 用户登录成功后会销毁用户当前的session. 
+			创建新的session,并把用户信息复制到新session中. -->
+		<session-management session-fixation-protection="none">
+			<concurrency-control />
+		</session-management>
+
+		<!-- login-page:默认指定的登录页面. authentication-failure-url:出错后跳转页面. default-target-url:成功登陆后跳转页面 -->
+		<form-login login-page="/page/logon.jsp"
+			authentication-failure-url="/page/403.jsp" default-target-url="/page/admin.jsp" />
+		<!-- logout-success-url:成功注销后跳转到的页面; -->
+		<logout logout-success-url="/page/logon.jsp" />
+		<http-basic />
+
+	</http>
+
+	<!-- 连接池.我spring配置文件中配的有.所以这里就注掉了. <beans:bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"> 
+		<beans:property name="driverClassName" value="com.mysql.jdbc.Driver"/> <beans:property 
+		name="url" value="jdbc:mysql://localhost/demo"/> <beans:property name="username" 
+		value="root"/> <beans:property name="password" value="root"/> </beans:bean> -->
+
+	<!-- 权限管理操作 -->
+	<authentication-manager>
+		<authentication-provider>
+			<!-- 密码加密方式. 常用的有md5 和 sha. salt-source:忘记了.. 手头api关了,网速卡就不上网查了. 类似在md5上又加了一层. 
+				放置暴力破解. 追加安全性. <password-encoder hash="md5"> <salt-source user-property="username"/> 
+				</password-encoder> -->
+			<!-- 注入dataSource验证数据库中的用户名.密码.账号状态.和权限相关; -->
+			<!--jdbc-user-service data-source-ref="dataSource" users-by-username-query="select 
+				username,password,enabled from user where username = ? and enabled = 1" authorities-by-username-query="select 
+				u.username,r.name from user u join user_role ur on u.uid = ur.uid join role 
+				r on r.rid = ur.rid where u.username = ?" / -->
+			<!-- 使用固定的用户名和密码及权限来做验证. -->
+			<user-service>
+				<user name="admin" password="admin" authorities="ROLE_USER, ROLE_ADMIN" />
+				<user name="user" password="user" authorities="ROLE_USER" />
+			</user-service>
+		</authentication-provider>
+	</authentication-manager>
+	<!-- <beans:bean id="userDetailsServiceImpl" class="com.demo.test.service.impl.UserDetailsServiceImpl" 
+		/ --> <!-- 此配置只是自己学习的一个小demo. 数据库也建的比较随意 比较简单. 使用的是角色权限. 个人比较推荐组权限来控制.. (由于工作经验限制,此处为个人理解) 
+		我的库如下: user:username\password\enabled role:name\desc user_role:uid\rid -->
+</beans:beans> 
