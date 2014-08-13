@@ -19,8 +19,5 @@ public class ClientWS {
 		Customer c = new Customer();
 		c.setId("123");
 		client.post(c);
-
 	}
-
->>>>>>> origin/master
 }
